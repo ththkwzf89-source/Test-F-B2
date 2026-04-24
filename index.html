@@ -326,8 +326,8 @@
     </section>
 
     <div class="toolbar">
-      <input id="searchInput" class="search" type="text" placeholder="Поиск по названиям, описанию, ссылкам и таблицам..." />
-      <button class="button" id="expandAllBtn">Показать всё</button>
+      <input id="searchInput" class="search" type="text" placeholder="Пошук по назвам та опису..." />
+      <button class="button" id="expandAllBtn">Показати все</button>
     </div>
 
     <div id="content"></div>
@@ -396,9 +396,9 @@
         },
         {
           type: "calculator",
-          title: "Калькулятор завтрака",
-          badge: "Расчет",
-          description: "Расчет напитков для завтрака по норме на 120 гостей с учетом максимального лимита"
+          title: "Калькулятор сніданків",
+          badge: "Розрахунок",
+          description: "Розрахунок кількості молока та соків, що потрібно виставити на сніданки для ранкової зміни"
         }
       ]
     };
@@ -460,18 +460,18 @@
           calc.className = 'calc-box';
           calc.innerHTML = `
             <div class="calc-field">
-              <label class="calc-label" for="guestsInput">Количество завтраков</label>
-              <input id="guestsInput" class="calc-input" type="number" min="0" step="1" placeholder="Например, 120" />
+              <label class="calc-label" for="guestsInput">Кількість сніданків</label>
+              <input id="guestsInput" class="calc-input" type="number" min="0" step="1" placeholder="Наприклад, 70" />
             </div>
 
             <div class="calc-actions">
-              <button class="button" type="button" onclick="calculateBreakfast()">Рассчитать</button>
-              <button class="button-secondary" type="button" onclick="resetBreakfastCalculator()">Очистить</button>
+              <button class="button" type="button" onclick="calculateBreakfast()">Розрахувати</button>
+              <button class="button-secondary" type="button" onclick="resetBreakfastCalculator()">Очистити</button>
             </div>
 
             <div class="calc-result" id="calcResult">
               <div class="calc-result-title">Результат</div>
-              <div class="muted">Введите количество завтраков и нажмите «Рассчитать».</div>
+              <div class="muted">Введіть кількість сніданків та натисніть "Розрахувати".</div>
             </div>
           `;
           card.appendChild(calc);
@@ -511,7 +511,7 @@
 
         const footer = document.createElement('div');
         footer.className = 'footer-note';
-        footer.textContent = 'Этот блок можно менять прямо в коде в разделе DATA.';
+        footer.textContent = '=)';
         card.appendChild(footer);
 
         grid.appendChild(card);
@@ -551,23 +551,23 @@
       const appleJuice = Math.min(appleJuiceRaw, 8);
       const milk = Math.min(milkRaw, 14);
 
-      const orangeLimitNote = orangeJuiceRaw > 8 ? '<div class="muted">Достигнут максимум: 8 л</div>' : '';
-      const appleLimitNote = appleJuiceRaw > 8 ? '<div class="muted">Достигнут максимум: 8 л</div>' : '';
-      const milkLimitNote = milkRaw > 14 ? '<div class="muted">Достигнут максимум: 14 л</div>' : '';
+      const orangeLimitNote = orangeJuiceRaw > 8 ? '<div class="muted">Максимум 8 л.</div>' : '';
+      const appleLimitNote = appleJuiceRaw > 8 ? '<div class="muted">Максимум 8 л.</div>' : '';
+      const milkLimitNote = milkRaw > 14 ? '<div class="muted">Максимум 14 л.</div>' : '';
 
       const result = document.getElementById('calcResult');
       if (!result) return;
 
       result.innerHTML = `
-        <div class="calc-result-title">Результат для ${breakfasts.toFixed(0)} завтраков</div>
+        <div class="calc-result-title">Результат для ${breakfasts.toFixed(0)} сніданків</div>
         <div class="calc-result-grid">
           <div class="calc-result-item">
-            Апельсиновый сок
+            Апельсиновий сік
             <strong>${orangeJuice.toFixed(2)} л</strong>
             ${orangeLimitNote}
           </div>
           <div class="calc-result-item">
-            Яблочный сок
+            Яблучний сік
             <strong>${appleJuice.toFixed(2)} л</strong>
             ${appleLimitNote}
           </div>
@@ -588,7 +588,7 @@
       if (result) {
         result.innerHTML = `
           <div class="calc-result-title">Результат</div>
-          <div class="muted">Введите количество завтраков и нажмите «Рассчитать».</div>
+          <div class="muted">Введіть кількість сніданків та натисніть "Розрахувати".</div>
         `;
       }
     }
