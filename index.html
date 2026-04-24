@@ -398,7 +398,7 @@
           type: "calculator",
           title: "Калькулятор завтрака",
           badge: "Расчет",
-          description: "Расчет апельсинового сока, яблочного сока и молока по количеству гостей"
+          description: "Расчет напитков для завтрака по норме на 120 гостей с учетом максимального лимита"
         }
       ]
     };
@@ -454,13 +454,14 @@
         }
 
 
+
         if (section.type === 'calculator') {
           const calc = document.createElement('div');
           calc.className = 'calc-box';
           calc.innerHTML = `
             <div class="calc-field">
-              <label class="calc-label" for="guestsInput">Количество гостей</label>
-              <input id="guestsInput" class="calc-input" type="number" min="0" step="1" placeholder="Например, 50" />
+              <label class="calc-label" for="guestsInput">Количество завтраков</label>
+              <input id="guestsInput" class="calc-input" type="number" min="0" step="1" placeholder="Например, 120" />
             </div>
 
             <div class="calc-actions">
@@ -470,7 +471,7 @@
 
             <div class="calc-result" id="calcResult">
               <div class="calc-result-title">Результат</div>
-              <div class="muted">Введите количество гостей и нажмите «Рассчитать».</div>
+              <div class="muted">Введите количество завтраков и нажмите «Рассчитать».</div>
             </div>
           `;
           card.appendChild(calc);
@@ -538,29 +539,42 @@
     });
 
 
+
     function calculateBreakfast() {
-      const guests = parseFloat(document.getElementById('guestsInput')?.value) || 0;
-      const orangeJuice = guests * (1.25 / 10);
-      const appleJuice = guests * (0.3 / 10);
-      const milk = guests * (1 / 10);
+      const breakfasts = parseFloat(document.getElementById('guestsInput')?.value) || 0;
+
+      const orangeJuiceRaw = breakfasts * (8 / 120);
+      const appleJuiceRaw = breakfasts * (3 / 120);
+      const milkRaw = breakfasts * (10 / 120);
+
+      const orangeJuice = Math.min(orangeJuiceRaw, 8);
+      const appleJuice = Math.min(appleJuiceRaw, 8);
+      const milk = Math.min(milkRaw, 14);
+
+      const orangeLimitNote = orangeJuiceRaw > 8 ? '<div class="muted">Достигнут максимум: 8 л</div>' : '';
+      const appleLimitNote = appleJuiceRaw > 8 ? '<div class="muted">Достигнут максимум: 8 л</div>' : '';
+      const milkLimitNote = milkRaw > 14 ? '<div class="muted">Достигнут максимум: 14 л</div>' : '';
 
       const result = document.getElementById('calcResult');
       if (!result) return;
 
       result.innerHTML = `
-        <div class="calc-result-title">Результат для ${guests.toFixed(0)} гостей</div>
+        <div class="calc-result-title">Результат для ${breakfasts.toFixed(0)} завтраков</div>
         <div class="calc-result-grid">
           <div class="calc-result-item">
             Апельсиновый сок
             <strong>${orangeJuice.toFixed(2)} л</strong>
+            ${orangeLimitNote}
           </div>
           <div class="calc-result-item">
             Яблочный сок
             <strong>${appleJuice.toFixed(2)} л</strong>
+            ${appleLimitNote}
           </div>
           <div class="calc-result-item">
             Молоко
             <strong>${milk.toFixed(2)} л</strong>
+            ${milkLimitNote}
           </div>
         </div>
       `;
@@ -574,7 +588,7 @@
       if (result) {
         result.innerHTML = `
           <div class="calc-result-title">Результат</div>
-          <div class="muted">Введите количество гостей и нажмите «Рассчитать».</div>
+          <div class="muted">Введите количество завтраков и нажмите «Рассчитать».</div>
         `;
       }
     }
