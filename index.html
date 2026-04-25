@@ -471,7 +471,7 @@
 
             <div class="calc-result" id="calcResult">
               <div class="calc-result-title">Результат</div>
-              <div class="muted">Введіть кількість сніданків та натисніть "Розрахувати".</div>
+              <div class="muted">Введіть кількість сніданків та натисніть "Розрахувати". Округлення: до 0.50 вниз, з 0.51 вверх.</div>
             </div>
           `;
           card.appendChild(calc);
@@ -540,6 +540,13 @@
 
 
 
+
+    function customRound(value) {
+      const whole = Math.floor(value);
+      const decimal = value - whole;
+      return decimal <= 0.5 ? whole : Math.ceil(value);
+    }
+
     function calculateBreakfast() {
       const breakfasts = parseFloat(document.getElementById('guestsInput')?.value) || 0;
 
@@ -560,20 +567,21 @@
 
       result.innerHTML = `
         <div class="calc-result-title">Результат для ${breakfasts.toFixed(0)} сніданків</div>
+        <div class="muted" style="margin-bottom:10px;">Округлення: до 0.50 вниз, з 0.51 вверх.</div>
         <div class="calc-result-grid">
           <div class="calc-result-item">
             Апельсиновий сік
-            <strong>${orangeJuice.toFixed(2)} л</strong>
+            <strong>${customRound(orangeJuice)} л</strong>
             ${orangeLimitNote}
           </div>
           <div class="calc-result-item">
             Яблучний сік
-            <strong>${appleJuice.toFixed(2)} л</strong>
+            <strong>${customRound(appleJuice)} л</strong>
             ${appleLimitNote}
           </div>
           <div class="calc-result-item">
             Молоко
-            <strong>${milk.toFixed(2)} л</strong>
+            <strong>${customRound(milk)} л</strong>
             ${milkLimitNote}
           </div>
         </div>
@@ -588,7 +596,7 @@
       if (result) {
         result.innerHTML = `
           <div class="calc-result-title">Результат</div>
-          <div class="muted">Введіть кількість сніданків та натисніть "Розрахувати".</div>
+          <div class="muted">Введіть кількість сніданків та натисніть "Розрахувати". Округлення: до 0.50 вниз, з 0.51 вверх.</div>
         `;
       }
     }
