@@ -347,6 +347,159 @@
       color: var(--muted);
     }
 
+
+    /* Fullscreen gallery modal */
+    body.modal-open { overflow: hidden; }
+
+    .image-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 12, 22, 0.92);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 0.22s ease;
+      touch-action: none;
+    }
+
+    .image-modal.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .image-modal-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 72px 20px 64px;
+    }
+
+    .image-modal-img {
+      max-width: 92vw;
+      max-height: 82vh;
+      object-fit: contain;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+      transform: translate(0, 0) scale(1);
+      transition: transform 0.22s ease, opacity 0.22s ease;
+      cursor: zoom-in;
+      user-select: none;
+      -webkit-user-drag: none;
+      touch-action: none;
+    }
+
+    .image-modal-img.zoomed { cursor: grab; transition: transform 0.08s ease; }
+    .image-modal-img.dragging { cursor: grabbing; transition: none; }
+
+    .image-modal-img.slide-left {
+      transform: translateX(-40px) scale(0.98);
+      opacity: 0;
+    }
+
+    .image-modal-img.slide-right {
+      transform: translateX(40px) scale(0.98);
+      opacity: 0;
+    }
+
+    .image-modal-top {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #fff;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .image-modal-title { min-width: 0; }
+
+    .image-modal-title strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .image-modal-title span {
+      display: block;
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    .modal-btn {
+      pointer-events: auto;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 24px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .modal-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.04); }
+    .modal-btn:active { transform: scale(0.96); }
+
+    .modal-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+    }
+
+    .modal-prev { left: 18px; }
+    .modal-next { right: 18px; }
+
+    .image-modal-bottom {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 18px;
+      text-align: center;
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .gallery-item img {
+      cursor: zoom-in;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .gallery-item img:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+    }
+
+    @media (max-width: 640px) {
+      .modal-nav { display: none; }
+      .image-modal-stage { padding: 78px 12px 62px; }
+      .image-modal-bottom { font-size: 12px; }
+    }
+
     @media (max-width: 640px) {
       .container { padding: 16px; }
       .hero, .card { padding: 18px; }
@@ -371,6 +524,28 @@
 
     <div id="content"></div>
   </div>
+
+
+  <div id="imageModal" class="image-modal" aria-hidden="true">
+    <div class="image-modal-stage" id="imageModalStage">
+      <div class="image-modal-top">
+        <div class="image-modal-title">
+          <strong id="imageModalName">Фото</strong>
+          <span id="imageModalNote">Свайп — наступне фото, подвійний клік / тап — зум</span>
+        </div>
+        <button class="modal-btn" id="modalCloseBtn" type="button" aria-label="Закрити">×</button>
+      </div>
+
+      <button class="modal-btn modal-nav modal-prev" id="modalPrevBtn" type="button" aria-label="Попереднє">‹</button>
+      <img id="imageModalImg" class="image-modal-img" src="" alt="">
+      <button class="modal-btn modal-nav modal-next" id="modalNextBtn" type="button" aria-label="Наступне">›</button>
+
+      <div class="image-modal-bottom">
+        <span id="imageCounter">1 / 1</span> · Esc — закрити · ← → — перемикання · подвійний тап — зум
+      </div>
+    </div>
+  </div>
+
 
   <script>
     /*
@@ -480,7 +655,7 @@
       const grid = document.createElement('div');
       grid.className = 'grid';
 
-      DATA.sections.forEach((section) => {
+      DATA.sections.forEach((section, sectionIndex) => {
         const card = document.createElement('section');
         card.className = 'card searchable';
         card.dataset.search = JSON.stringify(section).toLowerCase();
@@ -546,12 +721,12 @@
           const gallery = document.createElement('div');
           gallery.className = 'gallery-grid';
 
-          section.items.forEach((item) => {
+          section.items.forEach((item, itemIndex) => {
             const div = document.createElement('div');
             div.className = 'gallery-item';
 
             div.innerHTML = `
-              <img src="${item.img}" alt="${item.name}">
+              <img src="${item.img}" alt="${item.name}" onclick="openImageModal(${sectionIndex}, ${itemIndex})">
               <div class="gallery-name">${item.name}</div>
               <div class="gallery-note">${item.note || ''}</div>
             `;
@@ -685,6 +860,290 @@
         `;
       }
     }
+
+
+    /* =========================
+       FULLSCREEN GALLERY
+       ========================= */
+
+    let currentGalleryItems = [];
+    let currentImageIndex = 0;
+    let zoomLevel = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isPointerDown = false;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let lastTapTime = 0;
+    let initialPinchDistance = 0;
+    let startZoomLevel = 1;
+
+    function getModalElements() {
+      return {
+        modal: document.getElementById('imageModal'),
+        img: document.getElementById('imageModalImg'),
+        name: document.getElementById('imageModalName'),
+        note: document.getElementById('imageModalNote'),
+        counter: document.getElementById('imageCounter')
+      };
+    }
+
+    function resetZoom() {
+      zoomLevel = 1;
+      translateX = 0;
+      translateY = 0;
+      const { img } = getModalElements();
+      img.classList.remove('zoomed', 'dragging');
+      updateImageTransform();
+    }
+
+    function updateImageTransform() {
+      const { img } = getModalElements();
+      img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`;
+    }
+
+    function openImageModal(sectionIndex, itemIndex) {
+      const section = DATA.sections[sectionIndex];
+      if (!section || section.type !== 'gallery') return;
+
+      currentGalleryItems = section.items || [];
+      currentImageIndex = itemIndex;
+
+      const { modal } = getModalElements();
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+
+      setModalImage();
+    }
+
+    function closeImageModal() {
+      const { modal } = getModalElements();
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      resetZoom();
+    }
+
+    function setModalImage(direction = '') {
+      const item = currentGalleryItems[currentImageIndex];
+      if (!item) return;
+
+      const { img, name, note, counter } = getModalElements();
+
+      resetZoom();
+
+      if (direction) {
+        img.classList.add(direction === 'next' ? 'slide-left' : 'slide-right');
+        setTimeout(() => {
+          img.src = item.img;
+          img.alt = item.name || 'Фото';
+          name.textContent = item.name || 'Фото';
+          note.textContent = item.note || 'Свайп — наступне фото, подвійний клік / тап — зум';
+          counter.textContent = `${currentImageIndex + 1} / ${currentGalleryItems.length}`;
+          img.classList.remove('slide-left', 'slide-right');
+        }, 120);
+      } else {
+        img.src = item.img;
+        img.alt = item.name || 'Фото';
+        name.textContent = item.name || 'Фото';
+        note.textContent = item.note || 'Свайп — наступне фото, подвійний клік / тап — зум';
+        counter.textContent = `${currentImageIndex + 1} / ${currentGalleryItems.length}`;
+      }
+    }
+
+    function showNextImage() {
+      if (!currentGalleryItems.length) return;
+      currentImageIndex = (currentImageIndex + 1) % currentGalleryItems.length;
+      setModalImage('next');
+    }
+
+    function showPrevImage() {
+      if (!currentGalleryItems.length) return;
+      currentImageIndex = (currentImageIndex - 1 + currentGalleryItems.length) % currentGalleryItems.length;
+      setModalImage('prev');
+    }
+
+    function toggleZoom() {
+      const { img } = getModalElements();
+
+      if (zoomLevel > 1) {
+        resetZoom();
+      } else {
+        zoomLevel = 2.3;
+        translateX = 0;
+        translateY = 0;
+        img.classList.add('zoomed');
+        updateImageTransform();
+      }
+    }
+
+    function getDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    document.addEventListener('click', (event) => {
+      if (event.target.id === 'modalCloseBtn') closeImageModal();
+      if (event.target.id === 'modalPrevBtn') showPrevImage();
+      if (event.target.id === 'modalNextBtn') showNextImage();
+      if (event.target.id === 'imageModalStage') closeImageModal();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      const { modal } = getModalElements();
+      if (!modal.classList.contains('active')) return;
+
+      if (event.key === 'Escape') closeImageModal();
+      if (event.key === 'ArrowRight') showNextImage();
+      if (event.key === 'ArrowLeft') showPrevImage();
+      if (event.key === '+' || event.key === '=') {
+        zoomLevel = Math.min(zoomLevel + 0.3, 4);
+        getModalElements().img.classList.toggle('zoomed', zoomLevel > 1);
+        updateImageTransform();
+      }
+      if (event.key === '-') {
+        zoomLevel = Math.max(zoomLevel - 0.3, 1);
+        if (zoomLevel === 1) resetZoom();
+        else updateImageTransform();
+      }
+    });
+
+    document.addEventListener('dblclick', (event) => {
+      if (event.target.id === 'imageModalImg') toggleZoom();
+    });
+
+    document.addEventListener('wheel', (event) => {
+      if (event.target.id !== 'imageModalImg') return;
+      event.preventDefault();
+
+      const delta = event.deltaY < 0 ? 0.2 : -0.2;
+      zoomLevel = Math.max(1, Math.min(4, zoomLevel + delta));
+      const { img } = getModalElements();
+      img.classList.toggle('zoomed', zoomLevel > 1);
+
+      if (zoomLevel === 1) resetZoom();
+      else updateImageTransform();
+    }, { passive: false });
+
+    document.addEventListener('touchstart', (event) => {
+      const { modal } = getModalElements();
+      if (!modal.classList.contains('active')) return;
+
+      if (event.touches.length === 2) {
+        initialPinchDistance = getDistance(event.touches);
+        startZoomLevel = zoomLevel;
+        return;
+      }
+
+      if (event.target.id === 'imageModalImg' && event.touches.length === 1) {
+        const now = Date.now();
+        if (now - lastTapTime < 280) toggleZoom();
+        lastTapTime = now;
+
+        isPointerDown = true;
+        pointerStartX = event.touches[0].clientX;
+        pointerStartY = event.touches[0].clientY;
+        touchStartX = pointerStartX;
+        touchStartY = pointerStartY;
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (event) => {
+      const { modal, img } = getModalElements();
+      if (!modal.classList.contains('active')) return;
+
+      if (event.touches.length === 2) {
+        event.preventDefault();
+        const distance = getDistance(event.touches);
+        zoomLevel = Math.max(1, Math.min(4, startZoomLevel * (distance / initialPinchDistance)));
+        img.classList.toggle('zoomed', zoomLevel > 1);
+        updateImageTransform();
+        return;
+      }
+
+      if (!isPointerDown || event.touches.length !== 1) return;
+
+      const currentX = event.touches[0].clientX;
+      const currentY = event.touches[0].clientY;
+      const dx = currentX - pointerStartX;
+      const dy = currentY - pointerStartY;
+
+      if (zoomLevel > 1) {
+        event.preventDefault();
+        img.classList.add('dragging');
+        translateX += dx;
+        translateY += dy;
+        pointerStartX = currentX;
+        pointerStartY = currentY;
+        updateImageTransform();
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend', (event) => {
+      const { modal, img } = getModalElements();
+      if (!modal.classList.contains('active')) return;
+
+      if (isPointerDown && zoomLevel === 1 && event.changedTouches.length === 1) {
+        const endX = event.changedTouches[0].clientX;
+        const endY = event.changedTouches[0].clientY;
+        const dx = endX - touchStartX;
+        const dy = endY - touchStartY;
+
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) showNextImage();
+          else showPrevImage();
+        }
+      }
+
+      isPointerDown = false;
+      img.classList.remove('dragging');
+    });
+
+    document.addEventListener('mousedown', (event) => {
+      if (event.target.id !== 'imageModalImg') return;
+
+      isPointerDown = true;
+      pointerStartX = event.clientX;
+      pointerStartY = event.clientY;
+      touchStartX = pointerStartX;
+      touchStartY = pointerStartY;
+
+      if (zoomLevel > 1) event.target.classList.add('dragging');
+    });
+
+    document.addEventListener('mousemove', (event) => {
+      if (!isPointerDown || zoomLevel <= 1) return;
+
+      const dx = event.clientX - pointerStartX;
+      const dy = event.clientY - pointerStartY;
+      translateX += dx;
+      translateY += dy;
+      pointerStartX = event.clientX;
+      pointerStartY = event.clientY;
+      updateImageTransform();
+    });
+
+    document.addEventListener('mouseup', (event) => {
+      const { img } = getModalElements();
+
+      if (isPointerDown && zoomLevel === 1) {
+        const dx = event.clientX - touchStartX;
+        const dy = event.clientY - touchStartY;
+
+        if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) showNextImage();
+          else showPrevImage();
+        }
+      }
+
+      isPointerDown = false;
+      if (img) img.classList.remove('dragging');
+    });
+
 
     render();
   </script>
